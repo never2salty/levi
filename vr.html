@@ -2,266 +2,366 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <title>Levis Geburtstagsquest – 40€ sammeln!</title>
+  <title>Levis Geburtstagsquest 💰</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
   <style>
-    body { margin: 0; background: #000; font-family: 'Arial Black', Impact, sans-serif; }
-
+    body { margin:0; background:#000; font-family:'Arial Black',Impact,sans-serif; }
     #overlay {
-      position: fixed; inset: 0;
-      background: radial-gradient(ellipse at center, #0a0030 0%, #000 100%);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 9999; text-align: center; padding: 24px;
+      position:fixed; inset:0;
+      background:radial-gradient(ellipse at center,#0a0030 0%,#000 100%);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      z-index:9999; text-align:center; padding:24px;
     }
-    #overlay h1 { font-size: clamp(2.5em,10vw,5em); color: #FFD700; margin: 0 0 0.1em; animation: glow 2s ease-in-out infinite; }
-    #overlay .sub { font-size: clamp(0.85em,2.8vw,1.15em); color: #aaa; margin-bottom: 1.2em; line-height: 1.6; }
+    #overlay h1 { font-size:clamp(2.5em,10vw,5em); color:#FFD700; margin:0 0 0.1em; animation:glow 2s ease-in-out infinite; }
+    #overlay .sub { font-size:clamp(0.85em,2.8vw,1.1em); color:#aaa; margin-bottom:1em; line-height:1.7; }
     #overlay .mission {
-      background: rgba(255,200,0,0.08); border: 1px solid #FFD700; border-radius: 14px;
-      padding: 18px 28px; margin-bottom: 2em;
-      font-size: clamp(0.8em,2.5vw,1em); color: #FFD700; line-height: 2;
+      background:rgba(255,200,0,0.08); border:1px solid #FFD700; border-radius:14px;
+      padding:16px 26px; margin-bottom:1.8em;
+      font-size:clamp(0.78em,2.4vw,0.98em); color:#FFD700; line-height:2.2;
     }
     #start-btn {
-      background: linear-gradient(135deg,#FFD700,#FF6B00); border: none; border-radius: 50px;
-      padding: 18px 52px; font-size: clamp(1em,3.5vw,1.5em);
-      font-weight: bold; color: white; cursor: pointer; font-family: inherit;
-      box-shadow: 0 0 50px rgba(255,215,0,0.7); animation: pulse 1.5s ease-in-out infinite;
+      background:linear-gradient(135deg,#FFD700,#FF6B00); border:none; border-radius:50px;
+      padding:18px 52px; font-size:clamp(1em,3.5vw,1.5em);
+      font-weight:bold; color:white; cursor:pointer; font-family:inherit;
+      box-shadow:0 0 50px rgba(255,215,0,0.7); animation:pulse 1.5s ease-in-out infinite;
     }
-
     #win-screen {
-      position: fixed; inset: 0; background: rgba(0,0,20,0.97);
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 9998; text-align: center; padding: 24px;
+      position:fixed; inset:0; background:rgba(0,0,20,0.97);
+      display:none; flex-direction:column; align-items:center; justify-content:center;
+      z-index:9998; text-align:center; padding:24px;
     }
-    #win-screen h1 { font-size: clamp(2em,8vw,4.5em); color: #FFD700; margin: 0 0 0.3em; animation: glow 1s ease-in-out infinite; }
-    #win-screen .amount { font-size: clamp(2em,8vw,4em); color: #00FF88; margin: 0.2em 0; }
-    #win-screen .gift { font-size: clamp(0.9em,3vw,1.4em); color: #fff; line-height: 1.8; margin-bottom: 1em; }
-    #win-screen .from { font-size: clamp(0.75em,2.2vw,1em); color: #aaa; }
-
-    @keyframes glow {
-      0%,100% { text-shadow: 0 0 20px #FFD700; }
-      50%      { text-shadow: 0 0 80px #FFD700, 0 0 130px #FF6B00; }
-    }
-    @keyframes pulse {
-      0%,100% { box-shadow: 0 0 50px rgba(255,215,0,0.7); }
-      50%      { box-shadow: 0 0 110px rgba(255,215,0,1); }
-    }
+    #win-screen h1 { font-size:clamp(2em,8vw,4.5em); color:#FFD700; margin:0 0 0.3em; animation:glow 1s ease-in-out infinite; }
+    #win-screen .amount { font-size:clamp(2em,8vw,4em); color:#00FF88; margin:0.2em 0; font-weight:900; }
+    #win-screen .gift { font-size:clamp(0.9em,3vw,1.4em); color:#fff; line-height:1.8; margin-bottom:1em; }
+    #win-screen .from { font-size:clamp(0.75em,2.2vw,1em); color:#aaa; }
+    #flash { position:fixed; inset:0; pointer-events:none; z-index:8888; opacity:0; background:#FFD700; transition:opacity 0.15s; }
+    @keyframes glow { 0%,100%{text-shadow:0 0 20px #FFD700;} 50%{text-shadow:0 0 80px #FFD700,0 0 130px #FF6B00;} }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 50px rgba(255,215,0,0.7);} 50%{box-shadow:0 0 110px rgba(255,215,0,1);} }
   </style>
 
   <script>
-    /* === A-Frame Komponenten — müssen vor der Scene registriert werden === */
+    /* =====================================================
+       AUDIO — alles per Web Audio API, kein Upload nötig
+       ===================================================== */
+    var audioCtx = null;
+    var bgTimer  = null;
 
-    /* Münze: schwebt, rotiert, Klick/Gaze = einsammeln */
-    AFRAME.registerComponent('coin', {
-      init: function () {
-        this.collected = false;
-        this._baseY    = null;
-        this._t        = Math.random() * Math.PI * 2;
-        this.el.setAttribute('animation__spin', {
-          property: 'rotation', to: '0 360 0',
-          loop: true, dur: 1800, easing: 'linear'
-        });
-        this.el.addEventListener('click', this.collect.bind(this));
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      playHappyBirthday();
+    }
+
+    function tone(freq, start, dur, vol, type) {
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.type = type || 'sine';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(vol || 0.2, start);
+      g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      o.start(start); o.stop(start + dur + 0.05);
+    }
+
+    function playPickupSound() {
+      if (!audioCtx) return;
+      var t = audioCtx.currentTime;
+      [523,659,784,1047].forEach(function(f,i){ tone(f, t+i*0.065, 0.16, 0.16); });
+    }
+
+    function playDepositSound() {
+      if (!audioCtx) return;
+      var t = audioCtx.currentTime;
+      [392,494,587,740,988].forEach(function(f,i){ tone(f, t+i*0.09, 0.3, 0.2, 'triangle'); });
+      tone(1568, t+0.5, 0.4, 0.12);
+    }
+
+    function playWinSound() {
+      if (!audioCtx) return;
+      var t = audioCtx.currentTime;
+      [523,659,784,659,784,1047,1047,1319].forEach(function(f,i){ tone(f, t+i*0.11, 0.22, 0.25, 'triangle'); });
+    }
+
+    function playHappyBirthday() {
+      if (!audioCtx) return;
+      var t = audioCtx.currentTime + 0.3;
+      var b = 60 / 118; // beat
+      // G G A G C B  |  G G A G D C  |  G G G5 E C B A  |  F F E C D C
+      var s = [
+        [392,.35],[392,.15],[440,.5],[392,.5],[523,.5],[494,.95],[0,.35],
+        [392,.35],[392,.15],[440,.5],[392,.5],[587,.5],[523,.95],[0,.35],
+        [392,.35],[392,.15],[784,.5],[659,.5],[523,.5],[494,.5],[440,.95],[0,.28],
+        [698,.35],[698,.15],[659,.5],[523,.5],[587,.5],[523,1.15]
+      ];
+      var total=0;
+      s.forEach(function(n){ if(n[0]>0) tone(n[0], t+total*b, n[1]*b*0.82, 0.13,'triangle'); total+=n[1]; });
+      bgTimer = setTimeout(playHappyBirthday, (total*b+1.8)*1000);
+    }
+
+    /* =====================================================
+       A-FRAME KOMPONENTEN
+       ===================================================== */
+
+    /* Münze bewegt sich + kann gegrabbt werden */
+    AFRAME.registerComponent('moving-coin', {
+      schema: { mt:{type:'string',default:'x'}, r:{type:'number',default:1.2}, spd:{type:'number',default:1} },
+      init: function() {
+        this.grabbed = false;
+        this._base   = null;
+        this._t      = Math.random() * Math.PI * 2;
+        this.el.classList.add('coin-obj');
+        this.el.setAttribute('animation__spin',{property:'rotation',to:'0 360 0',loop:true,dur:1600,easing:'linear'});
+        this.el.addEventListener('click', this.grab.bind(this));
       },
-      tick: function (time, delta) {
-        if (this.collected) return;
-        if (this._baseY === null) this._baseY = this.el.object3D.position.y;
-        this._t += delta * 0.0017;
-        this.el.object3D.position.y = this._baseY + Math.sin(this._t) * 0.09;
+      tick: function(time, dt) {
+        if (this.grabbed) return;
+        if (!this._base) this._base = this.el.object3D.position.clone();
+        this._t += dt * 0.001 * this.data.spd;
+        var p=this.el.object3D.position, b=this._base, r=this.data.r, t=this._t;
+        switch(this.data.mt) {
+          case 'x': p.set(b.x+Math.sin(t)*r,        b.y+Math.sin(t*0.6)*0.09, b.z); break;
+          case 'z': p.set(b.x,                        b.y+Math.cos(t*0.5)*0.09, b.z+Math.sin(t)*r); break;
+          case 'o': p.set(b.x+Math.cos(t)*r,          b.y+Math.sin(t*0.7)*0.1,  b.z+Math.sin(t)*r*0.6); break;
+          case 'b': p.set(b.x+Math.sin(t*0.4)*0.35,  b.y+Math.abs(Math.sin(t*2.1))*0.55, b.z); break;
+        }
       },
-      collect: function () {
-        if (this.collected) return;
-        this.collected = true;
-        this.el.setAttribute('animation__pop', { property: 'scale', to: '2 2 2', dur: 130, easing: 'easeOutQuad' });
-        this.el.setAttribute('animation__shrink', { property: 'scale', from: '2 2 2', to: '0 0 0', dur: 280, delay: 130, easing: 'easeInBack' });
-        setTimeout(function (el) { if (el.parentNode) el.parentNode.removeChild(el); }.bind(null, this.el), 450);
-        window.collectCoin();
+      grab: function() {
+        if (this.grabbed) return;
+        if (window.heldCoins >= 5) { window.showMsg('Du hast 5! Erst zum Korb, Alter! 🤦'); return; }
+        this.grabbed = true;
+        window.heldCoins++;
+        playPickupSound();
+        this.el.setAttribute('animation__pop',   {property:'scale',to:'2.2 2.2 2.2',dur:110,easing:'easeOutQuad'});
+        this.el.setAttribute('animation__shrink',{property:'scale',from:'2.2 2.2 2.2',to:'0 0 0',dur:270,delay:110,easing:'easeInBack'});
+        var el=this.el;
+        setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 420);
+        window.onCoinGrabbed();
       }
     });
 
-    /* Neon-Bodengitter */
-    AFRAME.registerComponent('floor-grid', {
-      init: function () {
-        for (var x = -9; x <= 9; x += 1.5) {
-          var l = document.createElement('a-box');
-          l.setAttribute('position', x + ' 0.01 -11');
-          l.setAttribute('scale', '0.025 0.01 22');
-          l.setAttribute('material', 'color: #0033BB; opacity: 0.55; transparent: true; shader: flat');
-          this.el.appendChild(l);
+    /* Korb — nimmt Münzen entgegen beim Klick */
+    AFRAME.registerComponent('basket', {
+      init: function() {
+        this.el.classList.add('basket-obj');
+        this.el.addEventListener('click', this.deposit.bind(this));
+        this._pt = 0;
+      },
+      tick: function(t,dt) {
+        this._pt += dt * 0.003;
+        var s = window.heldCoins > 0 ? 1 + Math.sin(this._pt*4)*0.08 : 1;
+        this.el.object3D.scale.set(s,s,s);
+      },
+      deposit: function() {
+        if (window.heldCoins <= 0) { window.showMsg('Erstmal Muenzen schnappen, Sack! 😂'); return; }
+        var count = window.heldCoins;
+        window.heldCoins = 0;
+        window.euros += count;
+        playDepositSound();
+        window.flashScreen();
+        for (var i=0; i<count; i++) window.spawnFlyingCoin(i*120);
+        window.onDeposit(count);
+      }
+    });
+
+    /* Münze fliegt im Bogen zum Korb */
+    AFRAME.registerComponent('fly-to-basket', {
+      init: function() {
+        this.elapsed = 0;
+        this.dur = 520 + Math.random()*180;
+        var cam = document.getElementById('player');
+        this.from = new THREE.Vector3(); cam.object3D.getWorldPosition(this.from);
+        this.from.y += 0.2;
+        var bk = document.getElementById('basket-ent');
+        this.to = new THREE.Vector3(); bk.object3D.getWorldPosition(this.to);
+        this.to.y += 1.2;
+      },
+      tick: function(t,dt) {
+        this.elapsed += dt;
+        var p = Math.min(this.elapsed/this.dur, 1);
+        var e = p*p*(3-2*p);
+        var x = this.from.x + (this.to.x-this.from.x)*e;
+        var z = this.from.z + (this.to.z-this.from.z)*e;
+        var y = this.from.y + (this.to.y-this.from.y)*e + Math.sin(p*Math.PI)*2.4;
+        this.el.object3D.position.set(x,y,z);
+        if (p >= 1) {
+          document.getElementById('basket-ent').setAttribute('animation__bounce',
+            {property:'scale',from:'1.35 0.72 1.35',to:'1 1 1',dur:380,easing:'easeOutBounce'});
+          if (this.el.parentNode) this.el.parentNode.removeChild(this.el);
         }
-        for (var z = -1; z >= -22; z -= 1.5) {
-          var q = document.createElement('a-box');
-          q.setAttribute('position', '0 0.01 ' + z);
-          q.setAttribute('scale', '20 0.01 0.025');
-          q.setAttribute('material', 'color: #0033BB; opacity: 0.55; transparent: true; shader: flat');
-          this.el.appendChild(q);
+      }
+    });
+
+    /* Bodengitter */
+    AFRAME.registerComponent('floor-grid', {
+      init: function() {
+        for (var x=-9;x<=9;x+=1.5) {
+          var l=document.createElement('a-box'); l.setAttribute('position',x+' 0.01 -11'); l.setAttribute('scale','0.025 0.01 22');
+          l.setAttribute('material','color:#0033BB; opacity:0.55; transparent:true; shader:flat'); this.el.appendChild(l);
+        }
+        for (var z=-1;z>=-22;z-=1.5) {
+          var q=document.createElement('a-box'); q.setAttribute('position','0 0.01 '+z); q.setAttribute('scale','20 0.01 0.025');
+          q.setAttribute('material','color:#0033BB; opacity:0.55; transparent:true; shader:flat'); this.el.appendChild(q);
         }
       }
     });
   </script>
 </head>
 <body>
+<div id="flash"></div>
 
-<!-- ====================================================
-     SPLASH SCREEN
-     ==================================================== -->
+<!-- SPLASH -->
 <div id="overlay">
-  <h1>LEVI!</h1>
-  <p class="sub">Eine besondere Geburtstagsüberraschung wartet auf dich.<br>Schau dich um — überall!</p>
+  <h1>LEVI! 🎂</h1>
+  <p class="sub">Alles Gute, alter Sack! 😂<br>Dein Geburtstagsgeld wartet — aber du musst es dir verdienen.</p>
   <div class="mission">
-    🎯 <strong>DEINE MISSION</strong><br>
-    Sammle alle <strong>40 goldenen Münzen</strong> im Raum.<br>
-    Jede Münze = <strong>1€ echtes Geburtstagsgeld!</strong><br>
-    Schau auch oben, unten und in die Ecken!
+    🎯 <strong>DEINE MISSION:</strong><br>
+    Schnapp die <strong>goldenen Münzen</strong> mit dem <strong>Trigger-Knopf</strong>.<br>
+    Trag sie zum <strong>goldenen Korb</strong> (max. 5 auf einmal).<br>
+    Dort wieder Trigger drücken → Münzen fliegen rein!<br>
+    <strong>40 Münzen = 40€ echtes Geburtstagsgeld! 💰</strong><br>
+    <em>Die Münzen laufen weg — so wie du vor Hausaufgaben 😂</em>
   </div>
-  <button id="start-btn" onclick="startExperience()">MISSION STARTEN 🎮</button>
+  <button id="start-btn" onclick="startExperience()">LOS GEHT'S, LEVI! 🎮</button>
 </div>
 
-<!-- ====================================================
-     WIN SCREEN
-     ==================================================== -->
+<!-- WIN -->
 <div id="win-screen">
-  <h1>🎉 GEWONNEN! 🎉</h1>
+  <h1>🎉 LEGEND! 🎉</h1>
   <div class="amount">40 EURO!</div>
-  <p class="gift">Du hast alle Münzen gefunden!<br>Das Geld gehört dir — gib's aus, wofür du willst! 🛍️</p>
-  <p class="from">Von Daniel, Thanh, Vero &amp; Harm ❤️<br><br>Alles Gute zum 12. Geburtstag, Levi!</p>
+  <p class="gift">Du hast alle Münzen gefunden, du absolute Legende!<br>Das Geld gehört dir — gönn dir was! 🛍️👟</p>
+  <p class="from">Von Daniel, Thanh, Vero &amp; Harm ❤️<br><br>Alles Gute zum 12., Levi!</p>
 </div>
 
+<!-- A-FRAME SZENE -->
+<a-scene id="main-scene" vr-mode-ui="enabled:true" renderer="antialias:true; colorManagement:true">
 
-<!-- ====================================================
-     A-FRAME SZENE
-     Raum: x –9..9, y 0..5, z –1..–21
-     Spieler startet bei (0, 1.6, –3)
-     ==================================================== -->
-<a-scene id="main-scene" vr-mode-ui="enabled: true" renderer="antialias: true; colorManagement: true">
-
-  <!-- ===== RAUM ===== -->
+  <!-- RAUM -->
   <a-plane position="0 0 -11"  rotation="-90 0 0" width="20" height="22" color="#09091a" roughness="0.05" metalness="0.95"></a-plane>
   <a-entity floor-grid></a-entity>
-
   <a-plane position="0 5 -11"  rotation="90 0 0"  width="20" height="22" color="#04040e"></a-plane>
-  <a-plane position="-9 2.5 -11" rotation="0 90 0"  width="22" height="5"  color="#0c0c1f"></a-plane>
-  <a-plane position="9 2.5 -11"  rotation="0 -90 0" width="22" height="5"  color="#0c0c1f"></a-plane>
-  <a-plane position="0 2.5 -21"                      width="20" height="5"  color="#0c0c1f"></a-plane>
-  <a-plane position="0 2.5 -1"   rotation="0 180 0"  width="20" height="5"  color="#0c0c1f"></a-plane>
+  <a-plane position="-9 2.5 -11" rotation="0 90 0"   width="22" height="5" color="#0c0c1f"></a-plane>
+  <a-plane position=" 9 2.5 -11" rotation="0 -90 0"  width="22" height="5" color="#0c0c1f"></a-plane>
+  <a-plane position="0 2.5 -21"                       width="20" height="5" color="#0c0c1f"></a-plane>
+  <a-plane position="0 2.5 -1"   rotation="0 180 0"   width="20" height="5" color="#0c0c1f"></a-plane>
 
-  <!-- ===== NEON LED-STREIFEN (oben an Wänden) ===== -->
-  <a-box position="-8.92 4.85 -11" scale="0.06 0.14 22" material="color:#00FFFF; emissive:#00FFFF; emissiveIntensity:1; shader:flat"></a-box>
-  <a-box position=" 8.92 4.85 -11" scale="0.06 0.14 22" material="color:#FF00FF; emissive:#FF00FF; emissiveIntensity:1; shader:flat"></a-box>
-  <a-box position="0 4.85 -20.92"  scale="20 0.14 0.06"  material="color:#FFD700; emissive:#FFD700; emissiveIntensity:1; shader:flat"></a-box>
-  <a-box position="0 4.85 -1.08"   scale="20 0.14 0.06"  material="color:#FF6600; emissive:#FF6600; emissiveIntensity:1; shader:flat"></a-box>
-  <!-- Boden-Streifen -->
-  <a-box position="-8.92 0.06 -11" scale="0.05 0.08 22" material="color:#002266; emissive:#0033BB; emissiveIntensity:0.7; shader:flat"></a-box>
-  <a-box position=" 8.92 0.06 -11" scale="0.05 0.08 22" material="color:#002266; emissive:#0033BB; emissiveIntensity:0.7; shader:flat"></a-box>
+  <!-- LED STRIPS -->
+  <a-box position="-8.92 4.85 -11" scale="0.06 0.14 22" material="color:#00FFFF;emissive:#00FFFF;emissiveIntensity:1;shader:flat"></a-box>
+  <a-box position=" 8.92 4.85 -11" scale="0.06 0.14 22" material="color:#FF00FF;emissive:#FF00FF;emissiveIntensity:1;shader:flat"></a-box>
+  <a-box position="0 4.85 -20.92"  scale="20 0.14 0.06"  material="color:#FFD700;emissive:#FFD700;emissiveIntensity:1;shader:flat"></a-box>
+  <a-box position="0 4.85 -1.08"   scale="20 0.14 0.06"  material="color:#FF6600;emissive:#FF6600;emissiveIntensity:1;shader:flat"></a-box>
+  <a-box position="-8.92 0.06 -11" scale="0.05 0.08 22" material="color:#002266;emissive:#0033BB;emissiveIntensity:0.7;shader:flat"></a-box>
+  <a-box position=" 8.92 0.06 -11" scale="0.05 0.08 22" material="color:#002266;emissive:#0033BB;emissiveIntensity:0.7;shader:flat"></a-box>
 
-  <!-- ===== GEBURTSTAGS-BANNER (Hinterwand) ===== -->
+  <!-- BANNER -->
   <a-plane position="0 3.9 -20.85" width="19" height="0.9" color="#14003a" opacity="0.95"></a-plane>
   <a-text value="HAPPY BIRTHDAY" position="0 4.08 -20.75" align="center" color="#FFD700" width="13" font="exo2bold"
-    animation="property: scale; from: 1 1 1; to: 1.04 1.04 1; dir: alternate; loop: true; dur: 1400; easing: easeInOutSine">
-  </a-text>
+    animation="property:scale;from:1 1 1;to:1.04 1.04 1;dir:alternate;loop:true;dur:1400;easing:easeInOutSine"></a-text>
   <a-text value="LEVI!" position="0 3.1 -20.75" align="center" color="#00EEFF" width="22" font="exo2bold"></a-text>
-  <a-text value="12 JAHRE" position="0 2.3 -20.75" align="center" color="#FF69B4" width="9"></a-text>
-  <!-- Sternchen-Borte -->
+  <a-text value="12 JAHRE — DU ALTER SACK 😂" position="0 2.3 -20.75" align="center" color="#FF69B4" width="10"></a-text>
   <a-text value="* * * * * * * * * * * * * *" position="0 4.65 -20.75" align="center" color="#FFD700" width="18" material="shader:flat"></a-text>
 
-  <!-- ===== STREAMERS / GIRLANDEN ===== -->
-  <!-- Diagonal (Wand zur Mitte) -->
-  <a-box position="-5  4.3 -5"  rotation="0 0 -32" scale="0.04 3.2 0.04" material="color:#FF0066; shader:flat; opacity:0.85"></a-box>
-  <a-box position=" 5  4.3 -5"  rotation="0 0  32" scale="0.04 3.2 0.04" material="color:#00FFFF; shader:flat; opacity:0.85"></a-box>
-  <a-box position="-7  4.3 -12" rotation="0 0 -26" scale="0.04 3.6 0.04" material="color:#FFD700; shader:flat; opacity:0.85"></a-box>
-  <a-box position=" 7  4.3 -12" rotation="0 0  26" scale="0.04 3.6 0.04" material="color:#FF00FF; shader:flat; opacity:0.85"></a-box>
-  <a-box position="-5  4.3 -18" rotation="0 0 -34" scale="0.04 2.8 0.04" material="color:#00FF88; shader:flat; opacity:0.85"></a-box>
-  <a-box position=" 5  4.3 -18" rotation="0 0  34" scale="0.04 2.8 0.04" material="color:#FF8800; shader:flat; opacity:0.85"></a-box>
-  <!-- Quer (Wand zu Wand) -->
-  <a-box position="0 4.55 -7"  rotation="0 0 6"  scale="18 0.04 0.04" material="color:#FF6699; shader:flat; opacity:0.75"></a-box>
-  <a-box position="0 4.55 -14" rotation="0 0 -4" scale="18 0.04 0.04" material="color:#66FFCC; shader:flat; opacity:0.75"></a-box>
-  <a-box position="0 4.55 -19" rotation="0 0 5"  scale="18 0.04 0.04" material="color:#AAAAFF; shader:flat; opacity:0.75"></a-box>
+  <!-- STREAMERS -->
+  <a-box position="-5 4.3 -5"  rotation="0 0 -32" scale="0.04 3.2 0.04" material="color:#FF0066;shader:flat;opacity:0.85"></a-box>
+  <a-box position=" 5 4.3 -5"  rotation="0 0  32" scale="0.04 3.2 0.04" material="color:#00FFFF;shader:flat;opacity:0.85"></a-box>
+  <a-box position="-7 4.3 -12" rotation="0 0 -26" scale="0.04 3.6 0.04" material="color:#FFD700;shader:flat;opacity:0.85"></a-box>
+  <a-box position=" 7 4.3 -12" rotation="0 0  26" scale="0.04 3.6 0.04" material="color:#FF00FF;shader:flat;opacity:0.85"></a-box>
+  <a-box position="-5 4.3 -18" rotation="0 0 -34" scale="0.04 2.8 0.04" material="color:#00FF88;shader:flat;opacity:0.85"></a-box>
+  <a-box position=" 5 4.3 -18" rotation="0 0  34" scale="0.04 2.8 0.04" material="color:#FF8800;shader:flat;opacity:0.85"></a-box>
+  <a-box position="0 4.55 -7"  rotation="0 0 6"   scale="18 0.04 0.04" material="color:#FF6699;shader:flat;opacity:0.75"></a-box>
+  <a-box position="0 4.55 -14" rotation="0 0 -4"  scale="18 0.04 0.04" material="color:#66FFCC;shader:flat;opacity:0.75"></a-box>
+  <a-box position="0 4.55 -19" rotation="0 0 5"   scale="18 0.04 0.04" material="color:#AAAAFF;shader:flat;opacity:0.75"></a-box>
 
-  <!-- ===== DISCO-KUGEL (Mitte oben) ===== -->
+  <!-- DISCO-KUGEL -->
   <a-cylinder radius="0.02" height="0.6" color="#888" position="0 4.7 -11"></a-cylinder>
-  <a-entity position="0 4.4 -11" animation="property: rotation; to: 0 360 0; loop: true; dur: 7000; easing: linear">
+  <a-entity position="0 4.4 -11" animation="property:rotation;to:0 360 0;loop:true;dur:7000;easing:linear">
     <a-sphere radius="0.38" color="#bbb" metalness="1" roughness="0"></a-sphere>
-    <!-- Spiegel-Facetten -->
-    <a-plane width="0.07" height="0.07" color="#fff" material="shader:flat" position=" 0.38 0.1  0"    rotation="0 -90 0"></a-plane>
-    <a-plane width="0.07" height="0.07" color="#fff" material="shader:flat" position="-0.38 -0.1 0"    rotation="0  90 0"></a-plane>
-    <a-plane width="0.07" height="0.07" color="#fff" material="shader:flat" position="0  0.38 0.1"     rotation="-90 0 0"></a-plane>
-    <a-plane width="0.07" height="0.07" color="#fff" material="shader:flat" position="0.2 0.3  0.25"   rotation="-45 -45 0"></a-plane>
-    <a-plane width="0.07" height="0.07" color="#fff" material="shader:flat" position="-0.2 -0.3 0.25"  rotation="45 45 0"></a-plane>
+    <a-plane width="0.07" height="0.07" color="#fff" material="shader:flat" position=" 0.38 0.1 0" rotation="0 -90 0"></a-plane>
+    <a-plane width="0.07" height="0.07" color="#fff" material="shader:flat" position="-0.38 -0.1 0" rotation="0 90 0"></a-plane>
+    <a-plane width="0.07" height="0.07" color="#fff" material="shader:flat" position="0 0.38 0.1" rotation="-90 0 0"></a-plane>
   </a-entity>
-  <!-- Rotierende Disco-Lichter -->
-  <a-entity position="0 4.4 -11" animation="property: rotation; to: 0 360 0; loop: true; dur: 3500; easing: linear">
-    <a-light type="point" color="#FF00FF" intensity="2.5" position="3 0 0" distance="14"></a-light>
-    <a-light type="point" color="#00FFFF" intensity="2.5" position="-3 0 0" distance="14"></a-light>
+  <a-entity position="0 4.4 -11" animation="property:rotation;to:0 360 0;loop:true;dur:3200;easing:linear">
+    <a-light type="point" color="#FF00FF" intensity="2.5" position="3.5 0 0" distance="15"></a-light>
+    <a-light type="point" color="#00FFFF" intensity="2.5" position="-3.5 0 0" distance="15"></a-light>
   </a-entity>
 
-  <!-- ===== PERSONEN-PANELS ===== -->
+  <!-- ===== KORB (Ziel) ===== -->
+  <a-entity id="basket-ent" basket position="0 0 -10">
+    <a-cylinder radius="0.55" height="0.55" color="#8B4513" open-ended="true" side="double" position="0 0.9 0" roughness="0.8"></a-cylinder>
+    <a-cylinder radius="0.52" height="0.04" color="#5a2d0c" position="0 0.63 0"></a-cylinder>
+    <!-- Leuchtender Rand — click-Listener direkt drauf für Controller-Treffer -->
+    <a-torus id="basket-torus" radius="0.55" radius-tubular="0.045" color="#FFD700" position="0 1.17 0"
+      material="emissive:#CC8800;emissiveIntensity:0.9"></a-torus>
+    <a-torus radius="0.68" radius-tubular="0.025" color="#FFD700" position="0 1.17 0"
+      material="shader:flat;emissive:#FFD700;emissiveIntensity:1;opacity:0.5;transparent:true"
+      animation="property:material.opacity;from:0.2;to:0.8;dir:alternate;loop:true;dur:700"></a-torus>
+    <!-- Große unsichtbare Einwurf-Hitbox (Zylinder über dem Korb) -->
+    <a-cylinder id="basket-hit" radius="0.75" height="1.2" position="0 1.1 0"
+      material="opacity:0.001;transparent:true;depthWrite:false"></a-cylinder>
+    <a-text value="HIER REIN!" position="0 1.75 0" align="center" color="#FFD700" width="3.5" font="exo2bold"
+      animation="property:position;from:0 1.7 0;to:0 1.85 0;dir:alternate;loop:true;dur:850;easing:easeInOutSine"></a-text>
+    <a-torus radius="1.1" radius-tubular="0.06" color="#FFD700" rotation="-90 0 0" position="0 0.02 0"
+      material="shader:flat;emissive:#FFD700;emissiveIntensity:0.6;opacity:0.65;transparent:true"
+      animation="property:scale;from:1 1 1;to:1.12 1.12 1;dir:alternate;loop:true;dur:1100"></a-torus>
+    <a-light type="point" color="#FFD700" intensity="2" position="0 2 0" distance="5"></a-light>
+  </a-entity>
 
-  <!-- DANIEL (vorne links) -->
+  <!-- PERSONEN-PANELS -->
   <a-entity position="-5.5 1.6 -7.5" rotation="0 38 0">
-    <a-plane width="3" height="2" color="#001733" opacity="0.94" side="double"></a-plane>
-    <a-box width="3.1" height="0.07" depth="0.03" color="#00AAFF" position="0  1.02 0.02"></a-box>
-    <a-box width="3.1" height="0.07" depth="0.03" color="#00AAFF" position="0 -1.02 0.02"></a-box>
-    <a-box width="0.07" height="2.1"  depth="0.03" color="#00AAFF" position=" 1.55 0 0.02"></a-box>
-    <a-box width="0.07" height="2.1"  depth="0.03" color="#00AAFF" position="-1.55 0 0.02"></a-box>
-    <a-text value="DANIEL\n\nAlles Gute, Levi!\nDu bist die beste\nVersion von dir." position="0 0.05 0.05" align="center" color="#88DDFF" width="4.2"></a-text>
+    <a-plane width="3" height="2.3" color="#001733" opacity="0.94" side="double"></a-plane>
+    <a-box width="3.1" height="0.07" depth="0.03" color="#00AAFF" position="0  1.17 0.02"></a-box>
+    <a-box width="3.1" height="0.07" depth="0.03" color="#00AAFF" position="0 -1.17 0.02"></a-box>
+    <a-box width="0.07" height="2.4" depth="0.03" color="#00AAFF" position=" 1.55 0 0.02"></a-box>
+    <a-box width="0.07" height="2.4" depth="0.03" color="#00AAFF" position="-1.55 0 0.02"></a-box>
+    <a-text value="DANIEL sagt:\n\nLevi du Sack!\nBeweg dich!\nIch hab besseres\nzu tun als\nwarten! 😂" position="0 0.1 0.05" align="center" color="#88DDFF" width="4.2"></a-text>
   </a-entity>
 
-  <!-- THANH (vorne rechts) -->
   <a-entity position="5.5 1.6 -7.5" rotation="0 -38 0">
-    <a-plane width="3" height="2" color="#1a0030" opacity="0.94" side="double"></a-plane>
-    <a-box width="3.1" height="0.07" depth="0.03" color="#FF00FF" position="0  1.02 0.02"></a-box>
-    <a-box width="3.1" height="0.07" depth="0.03" color="#FF00FF" position="0 -1.02 0.02"></a-box>
-    <a-box width="0.07" height="2.1"  depth="0.03" color="#FF00FF" position=" 1.55 0 0.02"></a-box>
-    <a-box width="0.07" height="2.1"  depth="0.03" color="#FF00FF" position="-1.55 0 0.02"></a-box>
-    <a-text value="THANH\n\nHappy Birthday!\nWerde nie aufhoeren\nzu traeumen!" position="0 0.05 0.05" align="center" color="#FF88FF" width="4.2"></a-text>
+    <a-plane width="3" height="2.3" color="#1a0030" opacity="0.94" side="double"></a-plane>
+    <a-box width="3.1" height="0.07" depth="0.03" color="#FF00FF" position="0  1.17 0.02"></a-box>
+    <a-box width="3.1" height="0.07" depth="0.03" color="#FF00FF" position="0 -1.17 0.02"></a-box>
+    <a-box width="0.07" height="2.4" depth="0.03" color="#FF00FF" position=" 1.55 0 0.02"></a-box>
+    <a-box width="0.07" height="2.4" depth="0.03" color="#FF00FF" position="-1.55 0 0.02"></a-box>
+    <a-text value="THANH sagt:\n\nHappy Birthday!\nDeine Schwestern\nsind schneller\nals du lol 💀" position="0 0.1 0.05" align="center" color="#FF88FF" width="4.2"></a-text>
   </a-entity>
 
-  <!-- VERO (hinten links) -->
   <a-entity position="-6 1.6 -16" rotation="0 28 0">
-    <a-plane width="3" height="2" color="#001a00" opacity="0.94" side="double"></a-plane>
-    <a-box width="3.1" height="0.07" depth="0.03" color="#00FF88" position="0  1.02 0.02"></a-box>
-    <a-box width="3.1" height="0.07" depth="0.03" color="#00FF88" position="0 -1.02 0.02"></a-box>
-    <a-box width="0.07" height="2.1"  depth="0.03" color="#00FF88" position=" 1.55 0 0.02"></a-box>
-    <a-box width="0.07" height="2.1"  depth="0.03" color="#00FF88" position="-1.55 0 0.02"></a-box>
-    <a-text value="VERO\n\nAlles Gute zum\nGeburtstag! Du\nbist fantastisch!" position="0 0.05 0.05" align="center" color="#88FFCC" width="4.2"></a-text>
+    <a-plane width="3" height="2.3" color="#001a00" opacity="0.94" side="double"></a-plane>
+    <a-box width="3.1" height="0.07" depth="0.03" color="#00FF88" position="0  1.17 0.02"></a-box>
+    <a-box width="3.1" height="0.07" depth="0.03" color="#00FF88" position="0 -1.17 0.02"></a-box>
+    <a-box width="0.07" height="2.4" depth="0.03" color="#00FF88" position=" 1.55 0 0.02"></a-box>
+    <a-box width="0.07" height="2.4" depth="0.03" color="#00FF88" position="-1.55 0 0.02"></a-box>
+    <a-text value="VERO sagt:\n\nGO LEVI GO!\nDu schaffst das...\nGlaube ich\nzumindest 😅" position="0 0.1 0.05" align="center" color="#88FFCC" width="4.2"></a-text>
   </a-entity>
 
-  <!-- HARM (hinten rechts) -->
   <a-entity position="6 1.6 -16" rotation="0 -28 0">
-    <a-plane width="3" height="2" color="#200e00" opacity="0.94" side="double"></a-plane>
-    <a-box width="3.1" height="0.07" depth="0.03" color="#FF8800" position="0  1.02 0.02"></a-box>
-    <a-box width="3.1" height="0.07" depth="0.03" color="#FF8800" position="0 -1.02 0.02"></a-box>
-    <a-box width="0.07" height="2.1"  depth="0.03" color="#FF8800" position=" 1.55 0 0.02"></a-box>
-    <a-box width="0.07" height="2.1"  depth="0.03" color="#FF8800" position="-1.55 0 0.02"></a-box>
-    <a-text value="HARM\n\nChef-Geburtstag!\nDu wirst eine\nLegend, Levi!" position="0 0.05 0.05" align="center" color="#FFCC88" width="4.2"></a-text>
+    <a-plane width="3" height="2.3" color="#200e00" opacity="0.94" side="double"></a-plane>
+    <a-box width="3.1" height="0.07" depth="0.03" color="#FF8800" position="0  1.17 0.02"></a-box>
+    <a-box width="3.1" height="0.07" depth="0.03" color="#FF8800" position="0 -1.17 0.02"></a-box>
+    <a-box width="0.07" height="2.4" depth="0.03" color="#FF8800" position=" 1.55 0 0.02"></a-box>
+    <a-box width="0.07" height="2.4" depth="0.03" color="#FF8800" position="-1.55 0 0.02"></a-box>
+    <a-text value="HARM sagt:\n\nAlter Sack!\nDie Muenzen\nlaufen weg wie\ndeine Jugend 💀" position="0 0.1 0.05" align="center" color="#FFCC88" width="4.2"></a-text>
   </a-entity>
 
-  <!-- ===== GEBURTSTAGSKUCHEN (hinten Mitte) ===== -->
+  <!-- KUCHEN -->
   <a-entity position="0 0 -18.5">
-    <!-- Tisch -->
     <a-cylinder radius="0.85" height="0.08" color="#1a1a1a" position="0 0.79 0"></a-cylinder>
     <a-cylinder radius="0.06" height="0.8"  color="#2a2a2a" position="0 0.4 0"></a-cylinder>
-    <!-- Tier 1 (unten) -->
     <a-cylinder radius="0.58" height="0.34" color="#7B3F00" position="0 0.99 0"></a-cylinder>
     <a-cylinder radius="0.60" height="0.06" color="#FFAACC" position="0 1.17 0"></a-cylinder>
-    <!-- Tier 2 (mitte) -->
-    <a-cylinder radius="0.40" height="0.3"  color="#CC3344" position="0 1.33 0"></a-cylinder>
+    <a-cylinder radius="0.40" height="0.30" color="#CC3344" position="0 1.33 0"></a-cylinder>
     <a-cylinder radius="0.42" height="0.05" color="#FFDDAA" position="0 1.49 0"></a-cylinder>
-    <!-- Tier 3 (oben) -->
     <a-cylinder radius="0.24" height="0.24" color="#334466" position="0 1.63 0"></a-cylinder>
     <a-cylinder radius="0.26" height="0.04" color="#FFAACC" position="0 1.76 0"></a-cylinder>
-    <!-- Kerzen -->
-    <a-cylinder radius="0.025" height="0.22" color="#FFD700" position="0    1.9  0"></a-cylinder>
+    <a-cylinder radius="0.025" height="0.22" color="#FFD700" position="0     1.9  0"></a-cylinder>
     <a-cylinder radius="0.025" height="0.22" color="#FF6699" position=" 0.13 1.87 0.09"></a-cylinder>
     <a-cylinder radius="0.025" height="0.22" color="#00AAFF" position="-0.13 1.87 0.09"></a-cylinder>
-    <!-- Flammen -->
-    <a-sphere radius="0.03" position="0    2.03 0"    material="color:#FFAA00; shader:flat; emissive:#FF6600; emissiveIntensity:1"></a-sphere>
-    <a-sphere radius="0.03" position=" 0.13 2.0  0.09" material="color:#FFAA00; shader:flat; emissive:#FF6600; emissiveIntensity:1"></a-sphere>
-    <a-sphere radius="0.03" position="-0.13 2.0  0.09" material="color:#FFAA00; shader:flat; emissive:#FF6600; emissiveIntensity:1"></a-sphere>
+    <a-sphere radius="0.03" position="0     2.03 0"    material="color:#FFAA00;shader:flat;emissive:#FF6600;emissiveIntensity:1"></a-sphere>
+    <a-sphere radius="0.03" position=" 0.13 2.0  0.09" material="color:#FFAA00;shader:flat;emissive:#FF6600;emissiveIntensity:1"></a-sphere>
+    <a-sphere radius="0.03" position="-0.13 2.0  0.09" material="color:#FFAA00;shader:flat;emissive:#FF6600;emissiveIntensity:1"></a-sphere>
   </a-entity>
 
-  <!-- ===== GESCHENKE-TISCH LINKS ===== -->
+  <!-- GESCHENKE LINKS -->
   <a-entity position="-7 0 -15">
     <a-cylinder radius="0.7" height="0.07" color="#1a1a1a" position="0 0.76 0"></a-cylinder>
     <a-cylinder radius="0.055" height="0.76" color="#2a2a2a" position="0 0.38 0"></a-cylinder>
@@ -270,22 +370,19 @@
       <a-box width="0.05" height="0.46" depth="0.05" color="#FFD700" position="0 0 0"></a-box>
     </a-box>
     <a-box width="0.36" height="0.52" depth="0.36" color="#0044CC" position="0.22 1.09 0"></a-box>
-    <a-box width="0.28" height="0.28" depth="0.28" color="#FF8800" position="-0.05 1.25 -0.1"></a-box>
   </a-entity>
 
-  <!-- ===== GESCHENKE-TISCH RECHTS ===== -->
+  <!-- GESCHENKE RECHTS -->
   <a-entity position="7 0 -8">
     <a-cylinder radius="0.7" height="0.07" color="#1a1a1a" position="0 0.76 0"></a-cylinder>
     <a-cylinder radius="0.055" height="0.76" color="#2a2a2a" position="0 0.38 0"></a-cylinder>
     <a-box width="0.58" height="0.36" depth="0.42" color="#006600" position="0 0.99 0">
       <a-box width="0.06" height="0.38" depth="0.44" color="#FF0000" position="0 0 0"></a-box>
     </a-box>
-    <a-box width="0.32" height="0.38" depth="0.32" color="#660066" position="0.28 1.05 -0.1">
-      <a-box width="0.34" height="0.05" depth="0.05" color="#FFD700" position="0 0 0"></a-box>
-    </a-box>
+    <a-box width="0.32" height="0.38" depth="0.32" color="#660066" position="0.28 1.05 -0.1"></a-box>
   </a-entity>
 
-  <!-- ===== BELEUCHTUNG ===== -->
+  <!-- BELEUCHTUNG -->
   <a-light type="ambient"  color="#111133" intensity="0.75"></a-light>
   <a-light type="point" color="#FFD700" intensity="2.2" position="0  4 -6"  distance="18"></a-light>
   <a-light type="point" color="#0044FF" intensity="1.6" position="-8 3 -9"  distance="13"></a-light>
@@ -293,231 +390,279 @@
   <a-light type="point" color="#00FFAA" intensity="1.3" position="-8 3 -17" distance="13"></a-light>
   <a-light type="point" color="#FF8800" intensity="1.3" position=" 8 3 -17" distance="13"></a-light>
   <a-light type="point" color="#FFD700" intensity="1.5" position="0  4 -20" distance="10"></a-light>
-  <a-light type="point" color="#FFAA00" intensity="0.9" position="0  2.2 -18.5" distance="5"></a-light>
 
-  <!-- ===== KAMERA + HUD ===== -->
-  <a-camera id="player" position="0 1.6 -3" wasd-controls look-controls>
+  <!-- ===== SPIELER RIG — Joystick-Bewegung ===== -->
+  <a-entity id="rig" position="0 0 -3" movement-controls="speed:3; fly:false">
 
-    <!-- Gaze-Cursor (schaut 1.2 Sek auf Münze = sammeln) -->
-    <a-cursor
-      raycaster="objects: .coin-obj; far: 14"
-      fuse="true" fusetimeout="1200"
-      color="#FFD700"
-      geometry="primitive: ring; radiusInner: 0.007; radiusOuter: 0.013"
-      material="color: #FFD700; shader: flat">
-    </a-cursor>
+    <a-camera id="player" position="0 1.6 0" look-controls="pointerLockEnabled:false">
 
-    <!-- HUD oben rechts -->
-    <a-entity position="0.34 0.23 -0.65">
-      <!-- Hintergrund -->
-      <a-plane width="0.42" height="0.15" color="#000020" opacity="0.88" material="shader: flat"></a-plane>
-      <!-- Münz-Icon -->
-      <a-cylinder radius="0.023" height="0.007" color="#FFD700" rotation="80 0 0" position="-0.16 0.018 0.009"
-        material="shader: flat; emissive: #FFD700"></a-cylinder>
-      <!-- Zähler -->
-      <a-text id="hud-text" value="0 / 40 €" position="0.02 0.018 0.009"
-        align="center" color="#FFD700" width="0.95" font="exo2bold"></a-text>
-      <!-- Fortschrittsbalken Hintergrund -->
-      <a-plane width="0.34" height="0.017" color="#222244" position="0 -0.042 0.009" material="shader: flat"></a-plane>
-      <!-- Füllung (links-verankert per Scale-Trick) -->
-      <a-entity id="hud-bar" position="-0.17 -0.042 0.01" scale="0 1 1">
-        <a-plane width="0.34" height="0.017" color="#FFD700" position="0.17 0 0"
-          material="shader: flat; emissive: #BB8800; emissiveIntensity: 0.6"></a-plane>
+      <!-- Gaze-Cursor (Desktop-Fallback, 1.1 Sek schauen = greifen) -->
+      <a-cursor raycaster="objects:.coin-obj,.basket-obj;far:12"
+        fuse="true" fusetimeout="1100"
+        color="#FFD700"
+        geometry="primitive:ring;radiusInner:0.007;radiusOuter:0.013"
+        material="color:#FFD700;shader:flat">
+      </a-cursor>
+
+      <!-- HUD oben rechts -->
+      <a-entity position="0.35 0.24 -0.66">
+        <a-plane width="0.50" height="0.18" color="#000020" opacity="0.88" material="shader:flat"></a-plane>
+        <a-text id="hud-total" value="0 / 40 €"   position="0.01  0.044 0.009" align="center" color="#FFD700" width="0.98" font="exo2bold"></a-text>
+        <a-text id="hud-held"  value="Hand: 0 🪙" position="0.01 -0.022 0.009" align="center" color="#00FFCC" width="0.78"></a-text>
+        <a-plane width="0.42" height="0.016" color="#222244" position="0 -0.07 0.009" material="shader:flat"></a-plane>
+        <a-entity id="hud-bar" position="-0.21 -0.07 0.01" scale="0 1 1">
+          <a-plane width="0.42" height="0.016" color="#FFD700" position="0.21 0 0"
+            material="shader:flat;emissive:#BB8800;emissiveIntensity:0.6"></a-plane>
+        </a-entity>
       </a-entity>
+
+      <!-- Floating Message Mitte -->
+      <a-entity id="msg-wrap" position="0 -0.19 -0.66" visible="false">
+        <a-plane width="0.72" height="0.11" color="#000033" opacity="0.86" material="shader:flat"></a-plane>
+        <a-text id="msg-txt" value="" align="center" color="#ffffff" width="1.4" position="0 0 0.006"></a-text>
+      </a-entity>
+
+      <!-- In-VR Win Panel -->
+      <a-entity id="win-vr" visible="false" position="0 0 -2.3">
+        <a-plane width="3.6" height="2.5" color="#000020" opacity="0.97" material="shader:flat"></a-plane>
+        <a-text value="GEWONNEN!" position="0 0.85 0.05" align="center" color="#FFD700" width="7" font="exo2bold"></a-text>
+        <a-text value="40 EURO FUER DICH!" position="0 0.2 0.05" align="center" color="#00FF88" width="5.5" font="exo2bold"></a-text>
+        <a-text value="Von Daniel, Thanh,\nVero und Harm\n\nAlles Gute, Levi!" position="0 -0.68 0.05" align="center" color="#ffffff" width="4.2"></a-text>
+      </a-entity>
+    </a-camera>
+
+    <!-- Rechter Controller: kein objects-Filter → trifft alles, click-Events bubblen zu den Komponenten -->
+    <a-entity id="right-hand"
+      laser-controls="hand:right"
+      raycaster="far:12; interval:50"
+      line="color:#FFD700;opacity:0.7">
     </a-entity>
-
-    <!-- In-VR Win-Panel (erscheint nach Sieg) -->
-    <a-entity id="win-vr" visible="false" position="0 0 -2.2">
-      <a-plane width="3.5" height="2.4" color="#000020" opacity="0.97" material="shader: flat"></a-plane>
-      <a-text value="GEWONNEN!" position="0 0.8 0.05" align="center" color="#FFD700" width="7" font="exo2bold"></a-text>
-      <a-text value="40 EURO FUER DICH!" position="0 0.2 0.05" align="center" color="#00FF88" width="5.5" font="exo2bold"></a-text>
-      <a-text value="Von Daniel, Thanh,\nVero und Harm\n\nAlles Gute, Levi!" position="0 -0.65 0.05" align="center" color="#ffffff" width="4"></a-text>
-    </a-entity>
-
-  </a-camera>
-
-  <!-- VR-Controller Laser (Meta Quest 3) -->
-  <a-entity laser-controls="hand: right" raycaster="objects: .coin-obj; far: 16" line="color: #FFD700; opacity: 0.6"></a-entity>
-  <a-entity laser-controls="hand: left"></a-entity>
+    <!-- Linker Controller: nur Bewegung -->
+    <a-entity id="left-hand" laser-controls="hand:left" raycaster="far:0"></a-entity>
+  </a-entity>
 
 </a-scene>
 
-
 <script>
   /* ============================================================
-     SPIEL-LOGIK
+     SPIELZUSTAND
      ============================================================ */
-  var euros = 0;
+  window.euros     = 0;
+  window.heldCoins = 0;
 
+  var msgTimer = null;
+  window.showMsg = function(text) {
+    var w = document.getElementById('msg-wrap');
+    document.getElementById('msg-txt').setAttribute('value', text);
+    w.setAttribute('visible','true');
+    clearTimeout(msgTimer);
+    msgTimer = setTimeout(function(){ w.setAttribute('visible','false'); }, 3000);
+  };
+
+  window.flashScreen = function() {
+    var f = document.getElementById('flash');
+    f.style.opacity = '0.45';
+    setTimeout(function(){ f.style.opacity = '0'; }, 180);
+  };
+
+  function updateHUD() {
+    document.getElementById('hud-total').setAttribute('value', window.euros + ' / 40 €');
+    document.getElementById('hud-held').setAttribute('value',  'Hand: ' + window.heldCoins + ' 🪙');
+    document.getElementById('hud-bar').setAttribute('scale', (window.euros/40) + ' 1 1');
+    document.getElementById('hud-total').setAttribute('animation__fl',
+      {property:'scale', from:'1.45 1.45 1', to:'1 1 1', dur:320, easing:'easeOutBounce'});
+  }
+
+  window.onCoinGrabbed = function() {
+    updateHUD();
+    var left = 40 - window.euros - window.heldCoins;
+    var msgs = [
+      'SCHNAPP! Noch ' + left + '€ fehlen!',
+      'Levi du Muenzen-Maschine! 🪙',
+      'YOINK! Zum goldenen Korb!',
+      'Deine Schwestern waeren laengst fertig 💡',
+      'GG! Weiter zum Korb!',
+      'Nur noch ' + left + ' Euro! Du schaffst das!',
+      'Chef-Move! Weiter!'
+    ];
+    window.showMsg(msgs[Math.floor(Math.random()*msgs.length)]);
+  };
+
+  window.onDeposit = function() {
+    updateHUD();
+    var left = 40 - window.euros;
+    if (left <= 0) { window.showMsg('KOMPLETT! Du bist eine Legende! 🏆'); setTimeout(showWin, 1600); return; }
+    var msgs = [
+      'KORB! Noch ' + left + '€! 💪',
+      'BOOM! Chef-Move! Weiter! 🔥',
+      'Noch ' + left + ' Euro — Gas geben!',
+      'Levi Levi Levi! Noch ' + left + '!',
+      'Du Legend! Weiter machen!'
+    ];
+    window.showMsg(msgs[Math.floor(Math.random()*msgs.length)]);
+  };
+
+  function showWin() {
+    playWinSound();
+    clearTimeout(bgTimer);
+    document.getElementById('win-screen').style.display = 'flex';
+    document.getElementById('win-vr').setAttribute('visible','true');
+  }
+
+  /* Splash + Audio init */
   function startExperience() {
     document.getElementById('overlay').style.display = 'none';
+    initAudio();
   }
-  document.querySelector('a-scene').addEventListener('enter-vr', function () {
+  document.querySelector('a-scene').addEventListener('enter-vr', function() {
     document.getElementById('overlay').style.display = 'none';
+    initAudio();
   });
 
-  window.collectCoin = function () {
-    euros++;
-    document.getElementById('hud-text').setAttribute('value', euros + ' / 40 €');
-    document.getElementById('hud-bar').setAttribute('scale', (euros / 40) + ' 1 1');
-
-    /* Kurzes Aufleuchten des Zählers */
-    var txt = document.getElementById('hud-text');
-    txt.setAttribute('animation__flash', { property: 'scale', from: '1.4 1.4 1', to: '1 1 1', dur: 350, easing: 'easeOutBounce' });
-
-    if (euros >= 40) {
-      setTimeout(function () {
-        /* Desktop */
-        document.getElementById('win-screen').style.display = 'flex';
-        /* In VR */
-        document.getElementById('win-vr').setAttribute('visible', 'true');
-      }, 700);
-    }
+  /* ============================================================
+     FLIEGENDE MÜNZE ZUM KORB
+     ============================================================ */
+  window.spawnFlyingCoin = function(delay) {
+    setTimeout(function() {
+      var scene = document.querySelector('a-scene');
+      var fc = document.createElement('a-entity');
+      var cam = document.getElementById('player');
+      var fr = new THREE.Vector3(); cam.object3D.getWorldPosition(fr); fr.y += 0.2;
+      fc.setAttribute('position', fr);
+      fc.setAttribute('fly-to-basket','');
+      var d = document.createElement('a-cylinder');
+      d.setAttribute('radius','0.14'); d.setAttribute('height','0.045'); d.setAttribute('color','#FFD700');
+      d.setAttribute('material','shader:flat;emissive:#FFD700;emissiveIntensity:1');
+      fc.appendChild(d);
+      scene.appendChild(fc);
+    }, delay);
   };
 
   /* ============================================================
-     DYNAMISCHE OBJEKTE nach Scene-Load
+     MÜNZEN + BALLONS + KONFETTI NACH SCENE-LOAD
      ============================================================ */
-  document.querySelector('a-scene').addEventListener('loaded', function () {
+  document.querySelector('a-scene').addEventListener('loaded', function() {
     var scene = document.querySelector('a-scene');
 
-    /* ---- 40 MÜNZEN ---- */
-    var coins = [
-      /* EASY — Augenhöhe, offen sichtbar */
-      {x:  0,    y: 1.3, z: -5  },
-      {x:  2.2,  y: 1.3, z: -5  },
-      {x: -2.2,  y: 1.3, z: -5  },
-      {x:  0,    y: 1.3, z: -8  },
-      {x:  3,    y: 1.3, z: -7  },
-      {x: -3,    y: 1.3, z: -7  },
-      {x:  0,    y: 1.3, z: -11 },
-      {x:  4,    y: 1.3, z: -11 },
-      {x: -4,    y: 1.3, z: -11 },
-      {x:  0,    y: 1.3, z: -14 },
-      /* MEDIUM — Seiten, weiter weg */
-      {x:  6.5,  y: 1.3, z: -6  },
-      {x: -6.5,  y: 1.3, z: -6  },
-      {x:  7,    y: 1.3, z: -10 },
-      {x: -7,    y: 1.3, z: -10 },
-      {x:  6.5,  y: 1.3, z: -15 },
-      {x: -6.5,  y: 1.3, z: -15 },
-      {x:  3,    y: 1.3, z: -17 },
-      {x: -3,    y: 1.3, z: -17 },
-      {x:  0,    y: 1.3, z: -19 },
-      {x:  7,    y: 1.3, z: -19 },
-      /* FLOOR — auf dem Boden (runter schauen!) */
-      {x:  1.2,  y: 0.2, z: -4.5},
-      {x: -1.2,  y: 0.2, z: -4.5},
-      {x:  5,    y: 0.2, z: -9  },
-      {x: -5,    y: 0.2, z: -9  },
-      {x:  3,    y: 0.2, z: -13 },
-      {x: -3,    y: 0.2, z: -13 },
-      {x:  6,    y: 0.2, z: -17 },
-      {x: -6,    y: 0.2, z: -17 },
-      {x:  0,    y: 0.2, z: -20.2},
-      {x: -7.5,  y: 0.2, z: -19 },
-      /* HIGH — oben (rauf schauen!) */
-      {x:  8.2,  y: 3.8, z: -5  },
-      {x: -8.2,  y: 3.8, z: -5  },
-      {x:  0,    y: 4.2, z: -11 },
-      {x:  8.2,  y: 3.8, z: -13 },
-      {x: -8.2,  y: 3.8, z: -13 },
-      {x:  4,    y: 3.8, z: -19 },
-      {x: -4,    y: 3.8, z: -19 },
-      {x:  0,    y: 3.8, z: -20.2},
-      {x:  8.2,  y: 3.8, z: -19 },
-      {x:  0,    y: 4.2, z: -3  }
-    ];
-
-    coins.forEach(function (p) {
-      var entity = document.createElement('a-entity');
-      entity.setAttribute('position', p);
-      entity.setAttribute('class', 'coin-obj');
-      entity.setAttribute('coin', '');
-
-      /* Gold-Scheibe */
-      var disc = document.createElement('a-cylinder');
-      disc.setAttribute('radius', '0.17');
-      disc.setAttribute('height', '0.055');
-      disc.setAttribute('color', '#FFD700');
-      disc.setAttribute('material', 'emissive: #996600; emissiveIntensity: 0.55; metalness: 0.9; roughness: 0.12');
-      entity.appendChild(disc);
-
-      /* "1€" Label */
-      var lbl = document.createElement('a-text');
-      lbl.setAttribute('value', '1€');
-      lbl.setAttribute('position', '0 0.15 0');
-      lbl.setAttribute('align', 'center');
-      lbl.setAttribute('color', '#FF8800');
-      lbl.setAttribute('width', '1.5');
-      lbl.setAttribute('material', 'shader: flat');
-      entity.appendChild(lbl);
-
-      /* Glow unter der Münze */
-      var glow = document.createElement('a-sphere');
-      glow.setAttribute('radius', '0.1');
-      glow.setAttribute('position', '0 -0.07 0');
-      glow.setAttribute('material', 'color:#FFD700; shader:flat; emissive:#FFD700; emissiveIntensity:0.9; opacity:0.45; transparent:true');
-      entity.appendChild(glow);
-
-      scene.appendChild(entity);
+    /* Korb-Geometrien bekommen click-Listener direkt,
+       damit der Laser-Raycaster (kein objects-Filter) sie trifft */
+    ['basket-torus','basket-hit'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('click', function() {
+        var bk = document.getElementById('basket-ent');
+        if (bk && bk.components.basket) bk.components.basket.deposit();
+      });
     });
 
-    /* ---- LUFTBALLONS ---- */
-    var bColors = ['#FF3333','#3366FF','#FFD700','#33CC33','#FF33CC','#FF8800','#00CCFF','#CC33FF','#FF6699','#33FFCC','#FF4444','#AAFF00','#FF99AA','#55FFAA','#FFCC33'];
-    var bPos = [
-      {x:-7,z:-5},{x:-5,z:-4},{x:5,z:-4},{x:7,z:-5},
-      {x:-8,z:-10},{x:-5.5,z:-12},{x:5.5,z:-12},{x:8,z:-10},
-      {x:-7,z:-17},{x:-4,z:-19.5},{x:4,z:-19.5},{x:7,z:-17},
-      {x:0,z:-7},{x:-2,z:-14},{x:2,z:-14}
+    /* 40 Münzen */
+    var coins = [
+      /* EASY Augenhöhe patrol-x */
+      {x: 0,   y:1.3,  z:-5,  mt:'x',r:1.0,spd:0.7},
+      {x: 2.5, y:1.3,  z:-5,  mt:'x',r:0.9,spd:0.8},
+      {x:-2.5, y:1.3,  z:-5,  mt:'x',r:1.1,spd:0.65},
+      {x: 0,   y:1.3,  z:-8,  mt:'x',r:1.2,spd:0.9},
+      {x: 3,   y:1.3,  z:-7,  mt:'z',r:1.0,spd:0.75},
+      {x:-3,   y:1.3,  z:-7,  mt:'z',r:1.0,spd:0.8},
+      /* MITTEL */
+      {x: 0,   y:1.3,  z:-11, mt:'x',r:1.3,spd:1.0},
+      {x: 4,   y:1.3,  z:-11, mt:'z',r:1.2,spd:1.1},
+      {x:-4,   y:1.3,  z:-11, mt:'z',r:1.2,spd:0.95},
+      {x: 0,   y:1.3,  z:-14, mt:'x',r:1.4,spd:1.15},
+      {x: 6.5, y:1.3,  z:-6,  mt:'z',r:1.0,spd:1.0},
+      {x:-6.5, y:1.3,  z:-6,  mt:'z',r:1.0,spd:1.1},
+      {x: 7,   y:1.3,  z:-10, mt:'x',r:0.8,spd:1.25},
+      {x:-7,   y:1.3,  z:-10, mt:'x',r:0.8,spd:1.2},
+      {x: 3,   y:1.3,  z:-17, mt:'o',r:0.9,spd:0.8},
+      {x:-3,   y:1.3,  z:-17, mt:'o',r:0.9,spd:0.85},
+      {x: 6.5, y:1.3,  z:-15, mt:'z',r:1.0,spd:1.1},
+      {x:-6.5, y:1.3,  z:-15, mt:'z',r:1.0,spd:1.05},
+      {x: 0,   y:1.3,  z:-19, mt:'x',r:1.5,spd:1.2},
+      {x: 7,   y:1.3,  z:-19, mt:'o',r:0.8,spd:1.0},
+      /* BODEN */
+      {x: 1.2, y:0.22, z:-4.5,mt:'x',r:0.8,spd:1.4},
+      {x:-1.2, y:0.22, z:-4.5,mt:'x',r:0.8,spd:1.3},
+      {x: 5,   y:0.22, z:-9,  mt:'z',r:1.0,spd:1.2},
+      {x:-5,   y:0.22, z:-9,  mt:'z',r:1.0,spd:1.3},
+      {x: 3,   y:0.22, z:-13, mt:'x',r:1.2,spd:1.4},
+      {x:-3,   y:0.22, z:-13, mt:'x',r:1.2,spd:1.5},
+      {x: 6,   y:0.22, z:-17, mt:'o',r:0.9,spd:1.1},
+      {x:-6,   y:0.22, z:-17, mt:'o',r:0.9,spd:1.2},
+      {x: 0,   y:0.22, z:-20, mt:'x',r:1.0,spd:1.3},
+      {x:-7.5, y:0.22, z:-19, mt:'z',r:0.7,spd:1.4},
+      /* HOCH */
+      {x: 8.2, y:3.8,  z:-5,  mt:'b',r:0.6,spd:1.5},
+      {x:-8.2, y:3.8,  z:-5,  mt:'b',r:0.6,spd:1.4},
+      {x: 0,   y:4.0,  z:-11, mt:'o',r:1.0,spd:1.3},
+      {x: 8.2, y:3.8,  z:-13, mt:'b',r:0.5,spd:1.6},
+      {x:-8.2, y:3.8,  z:-13, mt:'b',r:0.5,spd:1.55},
+      {x: 4,   y:3.8,  z:-19, mt:'x',r:1.2,spd:1.4},
+      {x:-4,   y:3.8,  z:-19, mt:'x',r:1.2,spd:1.35},
+      {x: 0,   y:3.8,  z:-20, mt:'z',r:0.8,spd:1.5},
+      {x: 8.2, y:3.8,  z:-19, mt:'b',r:0.6,spd:1.6},
+      {x: 0,   y:4.2,  z:-3,  mt:'o',r:0.8,spd:1.7}
     ];
-    bPos.forEach(function (b, i) {
-      var color = bColors[i % bColors.length];
-      var yBase = 4.25 + (Math.random() * 0.3 - 0.15);
+
+    coins.forEach(function(d) {
       var ent = document.createElement('a-entity');
-      ent.setAttribute('position', b.x + ' ' + yBase + ' ' + b.z);
+      ent.setAttribute('position',{x:d.x,y:d.y,z:d.z});
+      ent.setAttribute('moving-coin',{mt:d.mt,r:d.r,spd:d.spd});
 
-      var ball = document.createElement('a-sphere');
-      ball.setAttribute('radius', '0.27');
-      ball.setAttribute('color', color);
-      ball.setAttribute('roughness', '0.3');
-      ball.setAttribute('animation', {
-        property: 'position', from: '0 0 0', to: '0 0.13 0',
-        dir: 'alternate', loop: true,
-        dur: 1400 + Math.floor(Math.random() * 900),
-        easing: 'easeInOutSine'
+      /* Gold-Scheibe — bekommt den click-Listener direkt,
+         damit der Laser des Controllers ein Mesh trifft */
+      var disc = document.createElement('a-cylinder');
+      disc.setAttribute('radius','0.22'); disc.setAttribute('height','0.09'); disc.setAttribute('color','#FFD700');
+      disc.setAttribute('material','emissive:#996600;emissiveIntensity:0.55;metalness:0.9;roughness:0.12');
+      disc.addEventListener('click', function() {
+        if (ent.components['moving-coin']) ent.components['moving-coin'].grab();
       });
-      ent.appendChild(ball);
+      ent.appendChild(disc);
 
-      var str = document.createElement('a-cylinder');
-      str.setAttribute('radius', '0.007');
-      str.setAttribute('height', '0.6');
-      str.setAttribute('position', '0 -0.44 0');
-      str.setAttribute('color', color);
-      str.setAttribute('material', 'opacity: 0.65; transparent: true');
-      ent.appendChild(str);
+      /* Unsichtbare größere Hitbox — fängt auch ungenaue Treffer */
+      var hit = document.createElement('a-cylinder');
+      hit.setAttribute('radius','0.32'); hit.setAttribute('height','0.45');
+      hit.setAttribute('material','opacity:0.001;transparent:true;depthWrite:false');
+      hit.addEventListener('click', function() {
+        if (ent.components['moving-coin']) ent.components['moving-coin'].grab();
+      });
+      ent.appendChild(hit);
+
+      var lbl = document.createElement('a-text');
+      lbl.setAttribute('value','1€'); lbl.setAttribute('position','0 0.18 0');
+      lbl.setAttribute('align','center'); lbl.setAttribute('color','#FF8800'); lbl.setAttribute('width','1.6');
+      lbl.setAttribute('material','shader:flat');
+      ent.appendChild(lbl);
+
+      var glow = document.createElement('a-sphere');
+      glow.setAttribute('radius','0.11'); glow.setAttribute('position','0 -0.07 0');
+      glow.setAttribute('material','color:#FFD700;shader:flat;emissive:#FFD700;emissiveIntensity:0.9;opacity:0.4;transparent:true');
+      ent.appendChild(glow);
 
       scene.appendChild(ent);
     });
 
-    /* ---- KONFETTI auf dem Boden ---- */
-    var cColors = ['#FF0066','#FFD700','#00AAFF','#FF6600','#00FF88','#FF00FF','#FFFF00','#FF3399'];
-    for (var c = 0; c < 90; c++) {
-      var conf = document.createElement('a-box');
-      conf.setAttribute('position', {
-        x: (Math.random() - 0.5) * 18,
-        y: 0.015,
-        z: -1 + (Math.random() - 1) * 20
-      });
-      conf.setAttribute('scale', '0.07 0.008 0.045');
-      conf.setAttribute('rotation', '0 ' + (Math.random() * 360) + ' 0');
-      conf.setAttribute('color', cColors[Math.floor(Math.random() * cColors.length)]);
-      conf.setAttribute('material', 'shader: flat; opacity: 0.9');
+    /* Ballons */
+    var bColors=['#FF3333','#3366FF','#FFD700','#33CC33','#FF33CC','#FF8800','#00CCFF','#CC33FF','#FF6699','#33FFCC','#FF4444','#AAFF00','#FF99AA','#55FFAA','#FFCC33'];
+    [{x:-7,z:-5},{x:-5,z:-4},{x:5,z:-4},{x:7,z:-5},{x:-8,z:-10},{x:-5.5,z:-12},{x:5.5,z:-12},{x:8,z:-10},{x:-7,z:-17},{x:-4,z:-19.5},{x:4,z:-19.5},{x:7,z:-17},{x:0,z:-7},{x:-2,z:-14},{x:2,z:-14}]
+    .forEach(function(b,i){
+      var c=bColors[i%bColors.length], y=4.25+(Math.random()*0.3-0.15);
+      var ent=document.createElement('a-entity'); ent.setAttribute('position',b.x+' '+y+' '+b.z);
+      var ball=document.createElement('a-sphere'); ball.setAttribute('radius','0.27'); ball.setAttribute('color',c); ball.setAttribute('roughness','0.3');
+      ball.setAttribute('animation',{property:'position',from:'0 0 0',to:'0 0.13 0',dir:'alternate',loop:true,dur:1400+Math.floor(Math.random()*900),easing:'easeInOutSine'});
+      ent.appendChild(ball);
+      var str=document.createElement('a-cylinder'); str.setAttribute('radius','0.007'); str.setAttribute('height','0.6'); str.setAttribute('position','0 -0.44 0'); str.setAttribute('color',c); str.setAttribute('material','opacity:0.65;transparent:true');
+      ent.appendChild(str); scene.appendChild(ent);
+    });
+
+    /* Konfetti */
+    var cc=['#FF0066','#FFD700','#00AAFF','#FF6600','#00FF88','#FF00FF','#FFFF00','#FF3399'];
+    for(var i=0;i<90;i++){
+      var conf=document.createElement('a-box');
+      conf.setAttribute('position',{x:(Math.random()-0.5)*18,y:0.015,z:-1+(Math.random()-1)*20});
+      conf.setAttribute('scale','0.07 0.008 0.045'); conf.setAttribute('rotation','0 '+(Math.random()*360)+' 0');
+      conf.setAttribute('color',cc[Math.floor(Math.random()*cc.length)]); conf.setAttribute('material','shader:flat;opacity:0.9');
       scene.appendChild(conf);
     }
-
-  }); /* end scene loaded */
+  });
 </script>
-
 </body>
 </html>
